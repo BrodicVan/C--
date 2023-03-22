@@ -24,5 +24,4 @@ void recursion_print(struct Node *nd);
 enum yyNTtype
 {
     Program=10000, ExtDecList, ExtDef, ExtDefList, Specifier, StructSpecifier, OptTag, Tag, VarDec, FunDec, VarList, ParamDec, CompSt, StmtList, Stmt, DefList, Def, Exp, Args, DecList, Dec
-
 };

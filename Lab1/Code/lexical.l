@@ -25,12 +25,14 @@ digit [0-9]
 
 COMMENT_SINGLE \/\/[^\n]*
 COMMENT_MULTI "/*"([^\*]|(\*)*[^\*\/])*(\*)*"*/"
-
+COMMENT_INCOMPLETE "/*"([^\*]|(\*)*[^\*\/])*(\*)*
 DEC 0|[1-9]{digit}*
 OCT 0[0-7]+
-HEX 0[xX]([0-9A-F]|[0-9a-f])+ 
+OCT_ERR 0[0-9a-wyzA-WYZ][0-9a-zA-Z]*
+HEX 0[xX]([0-9A-Fa-f])+ 
+HEX_ERR 0[xX][0-9A-Za-z]+
 FLOAT {digit}+\.{digit}+|{digit}+\.{digit}*([eE][+-]?{digit}+)?
-
+FLOAT_ERR {digit}+\.{digit}*[eE][+-]?
 ID  {letter}({letter}|{digit})*
 RELOP ==|>=|<=|!=|>|<
 
@@ -56,6 +58,8 @@ TYPE int|float
     // printf("COMMENT_MULTI:\n%s\n",yytext);
 }
 
+{COMMENT_INCOMPLETE} {printf("Error type B at Line %d: incomplete comment\n",yylineno);}
+
 {delim} {}
 
 
@@ -63,7 +67,7 @@ TYPE int|float
     yylval.type_node = createNode(yylineno,TYPE,yytext,0,0);
     return TYPE;
     }
-{RELOP} {return RELOP;}
+{RELOP} {yylval.type_node = createNode(yylineno,RELOP,yytext,0,0);return RELOP;}
 "\n" {yycolumn=1;}
 ";" {yylval.type_node = createNode(yylineno,SEMI,NULL,yylineno,0);return SEMI;}
 "," {yylval.type_node = createNode(yylineno,COMMA,NULL,yylineno,0);return COMMA;}
@@ -91,12 +95,6 @@ TYPE int|float
 "while" {yylval.type_node = createNode(yylineno,WHILE,NULL,yylineno,0);return WHILE;}
 
 
-{DEC} {
-    yylval.type_node = createNode(yylineno,INT,NULL, atoi(yytext),0);
-    // yylval.type_int = atoi(yytext);
-    return INT;
-    // return createNode(yylineno,INT,NULL, atoi(yytext),0);
-}
 
 {OCT} {
     int len = strlen(yytext);
@@ -106,8 +104,16 @@ TYPE int|float
         sum += sum*8 + yytext[i] - '0';
     }
     yylval.type_node = createNode(yylineno,INT,NULL,sum,0);
+    printf("OCT\n");
     return INT;
 }
+
+{OCT_ERR} {
+    printf("Error type A at Line %d: illegal OCT number \"%s\"\n",yylineno,yytext);
+    fail = 1;
+    yylval.type_node = createNode(yylineno,INT_ERR,NULL,0,0);return INT_ERR;
+}
+
 
 {HEX} {
     int len = strlen(yytext);
@@ -133,9 +139,23 @@ TYPE int|float
     return INT;
 }
 
+{HEX_ERR} {
+    printf("Error type A at Line %d: illegal HEX number \"%s\"\n",yylineno,yytext);
+    fail = 1;
+    yylval.type_node = createNode(yylineno,INT_ERR,NULL,0,0);return INT_ERR;
+}
+
+{DEC} {
+    yylval.type_node = createNode(yylineno,INT,NULL, atoi(yytext),0);
+    // yylval.type_int = atoi(yytext);
+    // printf("DEC: %s\n",yytext);
+    return INT;
+    // return createNode(yylineno,INT,NULL, atoi(yytext),0);
+}
+
+
+
 {FLOAT} {   
-    // struct Node* t = createNode(yylineno,INT,NULL,0,strtof(yytext,NULL));
-    // printf("%d\n",t->tag);
     yylval.type_node = createNode(yylineno,FLOAT,NULL,0,strtof(yytext,NULL));
     
     // yylval.type_double = strtof(yytext,NULL);
@@ -143,15 +163,23 @@ TYPE int|float
     // return createNode(yylineno,INT,NULL,0,strtof(yytext,NULL));
 }
 
+{FLOAT_ERR} {
+    printf("Error type A at Line %d: illegal FLOAT number \"%s\"\n",yylineno,yytext);
+    fail = 1;
+    yylval.type_node = createNode(yylineno,FLOAT_ERR,NULL,0,0);return INT_ERR;
+}
+
 {ID} {
     yylval.type_node = createNode(yylineno,ID,yytext,0,0);
+    // printf("ID: %s\n",yytext);
     return ID;
 }
 
 
 . {
     fail = 1;
-    printf("Error type A at Line %d:Mysterious character \'%s\'\n",yylineno,yytext);
+    printf("Error type A at Line %d: Mysterious characters \"%s\"\n",yylineno,yytext);
+    exit(0);
 }
 %%
 

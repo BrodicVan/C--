@@ -57,7 +57,9 @@ void treePrintLevel(struct Node *nd)
     switch(nd->tag)
     {
         case INT: token_name = "INT";break;
+        case INT_ERR: token_name = "INT_ERR";break;
         case FLOAT: token_name = "FLOAT";break;
+        case FLOAT_ERR: token_name = "FLOAT_ERR";break;
         case ID: token_name = "ID";break;
         case SEMI: token_name = "SEMI";break;
         case COMMA: token_name = "COMMA";break;
@@ -114,6 +116,10 @@ void treePrintLevel(struct Node *nd)
         case INT:
             printf("%s: %d",token_name,nd->value.type_int);
             break;
+        case INT_ERR:
+        case FLOAT_ERR:
+            printf("%s: NaN",token_name);
+            break;
         case FLOAT:
             printf("%s: %lf",token_name,nd->value.type_double);
             break;
@@ -160,7 +166,8 @@ void stack_print(struct Node *nd)
 {
     if(nd==NULL)
     {
-        printf("poniter is null\n");
+        // printf("poniter is null\n");
+        fprintf(stderr, "Fail building syntax tree\n");
         return;
     }
 
@@ -218,7 +225,8 @@ void recursion_print(struct Node *nd)
 {
     if(nd==NULL)
     {
-        printf("poniter is null\n");
+        fprintf(stderr, "Fail building syntax tree\n");
+        // printf("poniter is null\n");
         return;
     }
     nd->level = 0;
