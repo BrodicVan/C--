@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "semantics.h": "c",
+        "my_test": "cpp",
+        "syntax.tab.h": "c",
+        "compare": "c",
+        "limits": "c",
+        "new": "c"
+    }
+}
