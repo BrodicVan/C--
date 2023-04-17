@@ -1,0 +1,10 @@
+float func(int a)
+{
+
+}
+
+int main()
+{
+    float f = func(1);
+    
+}
