@@ -218,6 +218,21 @@ void insert_common(Common common)
     common_table[hash]->nxt_common = common;
 }
 
+void print_common()
+{
+    int i ;
+    for(i = 0; i < COMMON_TABLE_SIZE;i++)
+    {
+        Common cur_commom = common_table[i]->nxt_common;
+        while(cur_commom!=NULL)
+        {
+            printf("%s | ",cur_commom->name);
+            cur_commom = cur_commom->nxt_common;
+        }
+    }
+    printf("common end\n");
+}
+
 // 根据名称查询结构体缓存中的Common
 Common search_cache_common(char* name)
 {
@@ -238,12 +253,25 @@ Common search_cache_common(char* name)
 void free_cache()
 {
     Common cur_commom = struct_cache->nxt_common;
+    Common nxt_common;
     while(cur_commom!=NULL)
     {
+        nxt_common = cur_commom->nxt_common;
         insert_common(cur_commom);
-        cur_commom = cur_commom->nxt_common;
+        cur_commom = nxt_common;
     }
     struct_cache->nxt_common = NULL;
+}
+
+void print_cache()
+{
+    Common cur_commom = struct_cache->nxt_common;
+    while(cur_commom!=NULL)
+    {
+        printf("%s | ",cur_commom->name);
+        cur_commom = cur_commom->nxt_common;
+    }
+    printf("cache end\n");
 }
 
 // 需要进行深拷贝,目标地址为已分配好的空间
@@ -308,6 +336,8 @@ int compare_type(Type dst,Type src)
     {
         return 0;
     }
+    
+
     // UNKNOWN在本代码中看做万能类型
     if(dst->kind==UNKNOWN || src->kind==UNKNOWN)
     {
@@ -854,13 +884,14 @@ void syn_Exp(struct Node* nd)
                 if(!(check_l && check_r))
                 {
                     fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型可以进行算术运算\n",kid_1->row);
-                    nd->type->kind==UNKNOWN;
+                    nd->type->kind = UNKNOWN;
                 }
                 // 左右两边类型不匹配
                 else if(!check_ok)
                 {
                     fprintf(stderr, "<语义错误> 第%d行，错误类型7: 算术运算中的操作数类型不匹配\n",kid_1->row);
-                    nd->type->kind==UNKNOWN;
+                    nd->type->kind = UNKNOWN;
+                    
                 }
                 else
                 {
@@ -990,10 +1021,14 @@ void syn_StructSpecifier(struct Node* nd)
             struct_name = malloc(strlen(kid_1->name)+1);
             strcpy(struct_name,kid_1->name);
         }
-        
+
+        // print_cache();
+
         // 释放struct_cache
         free_cache();
-        
+        // printf("free_cache\n");
+        // print_common();
+
         // 查询符号表
         Var old_var = search_var(struct_name,1);
         
@@ -1246,6 +1281,7 @@ void synthesized(struct Node* nd)
                 
             }
 
+
             // 定义变量
             if(nd->id_type==VAR)
             {
@@ -1281,6 +1317,7 @@ void synthesized(struct Node* nd)
                 // 该名称已被使用
                 if(old_common!=NULL)
                 {
+                    
                     switch (old_common->kind)
                     {
                         case STRU:
@@ -1321,12 +1358,12 @@ void synthesized(struct Node* nd)
                     
                     new_common->nxt_common = struct_cache->nxt_common;
                     struct_cache->nxt_common = new_common;
-                    
+                    // print_cache();
                 }
                 // 该ID已经被变量占用
                 if(old_var!=NULL)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：不同结构体中域名(%s)重复\n",kid_0->row,kid_0->name);
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义过的变量的名字重复\n",kid_0->row,kid_0->name);
                 }
                 // 该名称已被使用
                 if(old_common!=NULL)
@@ -1334,13 +1371,13 @@ void synthesized(struct Node* nd)
                     switch (old_common->kind)
                     {
                         case STRU:
-                            fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的结构体名字重复\n",kid_0->row,kid_0->name);
+                            fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义的结构体名字重复\n",kid_0->row,kid_0->name);
                             break;
                         case FUNC:
                             // fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",kid_0->row,kid_0->name);
                             break;
                         case FIELD:
-                            fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的结构体中的域名字重复\n",kid_0->row,kid_0->name);
+                            fprintf(stderr, "<语义错误> 第%d行，错误类型20：不同结构体中域名(%s)重复\n",kid_0->row,kid_0->name);
                             break;
                         default:
                             break;

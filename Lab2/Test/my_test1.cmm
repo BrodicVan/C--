@@ -1,0 +1,44 @@
+struct Tem1
+{
+    int field_a,field_b;
+    float field_f;
+};
+
+struct Tem2
+{
+    int field_a;
+};
+
+struct Tem3
+{
+    int Tem2;
+};
+
+struct Tem4
+{
+    int field_4_a;
+    struct Tem1 field_4;
+};
+
+struct field_a
+{
+
+};
+
+struct recu
+{
+    int recu;
+};
+
+struct repeat
+{
+    int field_repeat;
+    float field_repeat;
+};
+
+int main()
+{
+    struct Tem1 t1;
+    struct Tem4 t4;
+    t4.field_4 = t1;
+}

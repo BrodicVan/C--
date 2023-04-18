@@ -1,0 +1,14 @@
+int main()
+{
+    int i;
+    float f;
+    if(i)
+    {
+        int j;
+    }
+
+    while(f)
+    {
+        f = f + 0.5;
+    }
+}

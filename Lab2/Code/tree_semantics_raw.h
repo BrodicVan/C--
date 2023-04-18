@@ -43,7 +43,6 @@ struct Node
     Type return_type;// 函数的返回值类型
     Type type;// 节点类型,功能多样: 记录变量/式子类型，确定结构体内部类型
     enum {LEFT,RIGHT} l_r;// 左值右值 
-    int if_stru_deflist;// 记录DefList是否是在某个结构体定义里，从而判断插入哪个符号表；属于继承属性
     Common struct_specifier;// Common表中的对应的结构体条目
     int if_structspecifier;// 记录一个Specifier是否为StructSpecifier
     enum ID_Type id_type;// 记录一个ID所代表的的含义
