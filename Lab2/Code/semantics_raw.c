@@ -915,7 +915,7 @@ void syn_Exp(struct Node* nd)
         {
             check_l = kid_0->type->kind==ARRAY;
             check_r = kid_2->type->kind==UNKNOWN | (kid_2->type->kind==BASIC && kid_2->type->u.basic==INT);
-            if(!check_l)
+            if(!(kid_0->type->kind==UNKNOWN || check_l))
             {
                 // 此处在某些情况下无法获取变量名：(a+b)[2]
                 fprintf(stderr, "<语义错误> 第%d行，错误类型10: 对非数组型变量使用“[…]”（数组访问）操作符\n",kid_0->row);
