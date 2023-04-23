@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "syntax.tab.h"
-#include "tree_semantics_raw.h"
+#include "tree_semantics.h"
 
 Var var_table[SIGNAL_TABLE_SIZE+1];// 变量符号表，数组中元素均为头指针，本身没有含义
 Domain_Item domains[DOMAIN_LAYER];// 作用域栈，数组中元素均为头指针，本身没有含义; 栈顶为最内部作用域
@@ -913,13 +913,13 @@ void syn_Exp(struct Node* nd)
         // Exp -> Exp LB Exp RB
         if(kid_2->tag==Exp)
         {
-            check_l = kid_0->type->kind==ARRAY;
+            check_l =  kid_0->type->kind==ARRAY;
             check_r = kid_2->type->kind==UNKNOWN | (kid_2->type->kind==BASIC && kid_2->type->u.basic==INT);
-            if(!(kid_0->type->kind==UNKNOWN || check_l))
+            if(!(kid_0->type->kind==UNKNOWN ||check_l))
             {
                 // 此处在某些情况下无法获取变量名：(a+b)[2]
                 fprintf(stderr, "<语义错误> 第%d行，错误类型10: 对非数组型变量使用“[…]”（数组访问）操作符\n",kid_0->row);
-                
+                nd->type->kind = UNKNOWN;
             }
             if(!check_r)
             {

@@ -545,7 +545,7 @@ char *yytext;
 #line 2 "./lexical.l"
 #include <stdio.h>
 #include "syntax.tab.h"
-#include "tree_semantics_raw.h"
+#include "tree_semantics.h"
 int yycolumn = 1;
 #define YY_USER_ACTION  \
     yylloc.first_line = yylloc.last_line = yylineno;\

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "tree_semantics_raw.h"
+#include "tree_semantics.h"
 
 extern int fail;
 

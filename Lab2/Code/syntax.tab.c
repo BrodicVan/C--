@@ -70,7 +70,7 @@
 #line 2 "./syntax.y"
 
 	#include <stdio.h>
-    #include "tree_semantics_raw.h"
+    #include "tree_semantics.h"
 	
     extern int yylex();
     void yyerror(const char* msg);

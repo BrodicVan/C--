@@ -11,14 +11,13 @@ CFLAGS = -std=c99
 
 CFILES = $(shell find ./ -name "*.c")
 TFILES = $(shell find ../Test/ )
-USEFUL_C = $(filter-out ./semantics.c,$(CFILES))
 LFILE = $(shell find ./ -name "*.l")
 YFILE = $(shell find ./ -name "*.y")
 LFC = $(shell find ./ -name "*.l" | sed s/[^/]*\\.l/lex.yy.c/)
 YFC = $(shell find ./ -name "*.y" | sed s/[^/]*\\.y/syntax.tab.c/)
 
 parser: syntax-c lexical-c $(OBJS)
-	$(CC) -o parser $(USEFUL_C) -lfl 
+	$(CC) -o parser $(CFILES) -lfl 
 
 lexical-c: $(LFILE)
 	$(FLEX) -o $(LFC) $(LFILE)

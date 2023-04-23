@@ -1,5 +1,5 @@
 #include "syntax.tab.h"
-#include "tree_semantics_raw.h"
+#include "tree_semantics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
