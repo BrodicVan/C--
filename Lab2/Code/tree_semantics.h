@@ -18,7 +18,7 @@ enum Generation_Type
 {
     Common_Generation, StructSpecifier0, Def0, CompSt0, DecList0, DecList1, Dec0, Dec1,
     VarDec0, VarDec1, DefList0, FunDec0, FunDec1, OptTag0, Tag0, Exp0, Exp1, Exp2, Exp3, 
-    ParamDec0, ExtDef0, StmtList0
+    ParamDec0, ExtDef0, StmtList0, Stmt0
 };
 
 enum ID_Type 

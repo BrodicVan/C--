@@ -15,7 +15,7 @@ extern int fail;
 %option yylineno
 
 
-delim [ \t]
+delim [ \r\t]
 whitespace {delim}+
 letter [A-Za-z_]
 digit [0-9]

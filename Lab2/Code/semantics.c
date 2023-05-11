@@ -226,11 +226,11 @@ void print_common()
         Common cur_commom = common_table[i]->nxt_common;
         while(cur_commom!=NULL)
         {
-            printf("%s | ",cur_commom->name);
+            // printf("%s | ",cur_commom->name);
             cur_commom = cur_commom->nxt_common;
         }
     }
-    printf("common end\n");
+    // printf("common end\n");
 }
 
 // 根据名称查询结构体缓存中的Common
@@ -268,15 +268,16 @@ void print_cache()
     Common cur_commom = struct_cache->nxt_common;
     while(cur_commom!=NULL)
     {
-        printf("%s | ",cur_commom->name);
+        // printf("%s | ",cur_commom->name);
         cur_commom = cur_commom->nxt_common;
     }
-    printf("cache end\n");
+    // printf("cache end\n");
 }
 
 // 需要进行深拷贝,目标地址为已分配好的空间
 void copy_type(Type dst,Type src)
 {
+    printf("debug: 进来copy_type了\n");
     dst->kind = src->kind;
     if(src->kind==BASIC)
     {      
@@ -290,18 +291,22 @@ void copy_type(Type dst,Type src)
     }
     else if(src->kind==STRUCTURE)
     {
-        
+        printf("debug: 进来STRUCTURE了\n");
         FieldList tem_head = (FieldList) malloc(sizeof(struct FieldList_));// 创建一个链表头，方便找
         tem_head->tail = NULL;
         FieldList src_field = src->u.structure;
 
         FieldList dst_field = tem_head;
+        printf("debug: 进来STRUCTURE-1了\n");
         while(src_field!=NULL)
         {
+            printf("debug: 进来STRUCTURE-1-1了\n");
             dst_field->tail = (FieldList) malloc(sizeof(struct FieldList_));
             dst_field = dst_field->tail;
-
+            printf("debug: 进来STRUCTURE-1-2了\n");
+            
             dst_field->name = (char*) malloc(strlen(src_field->name)+1);
+            
             strcpy(dst_field->name,src_field->name);
             dst_field->type = (Type) malloc(sizeof(struct Type_));
             copy_type(dst_field->type,src_field->type);
@@ -310,6 +315,7 @@ void copy_type(Type dst,Type src)
             src_field = src_field->tail;
 
         }
+        printf("debug: 进来STRUCTURE-2了\n");
         dst->u.structure = tem_head->tail;
         free(tem_head);
         
@@ -323,6 +329,7 @@ void copy_type(Type dst,Type src)
         fprintf(stderr, "Error: copy_type_error\n");
         exit(0);
     }
+    printf("debug: 退出copy_type了\n");
 }
 
 // 比较两个类型是否相等
@@ -491,7 +498,7 @@ void inherited(struct Node* nd,struct Node* parent)
             // DecList -> Dec COMMA DecList
             else if(parent_gen==DecList1)
             {
-                copy_type(nd->inh_type,parent->type);
+                copy_type(nd->inh_type,parent->inh_type);
                 nd->id_type = parent->id_type;
             }
             break;
@@ -583,6 +590,7 @@ void inherited(struct Node* nd,struct Node* parent)
                     }
                     else
                     {
+                        
                         copy_type(nd->return_type,parent->kids[0]->struct_specifier->type);
                     }
                     
@@ -590,8 +598,15 @@ void inherited(struct Node* nd,struct Node* parent)
                 // 若Specifier是Type
                 else
                 {
+                    
                     copy_type(nd->return_type,parent->kids[0]->type);
+                    
                 }
+            }
+            // Stmt -> Compst
+            else if(parent_gen==CompSt0)
+            {
+                copy_type(nd->return_type,parent->return_type);
             }
             break;
         case StmtList:
@@ -599,19 +614,22 @@ void inherited(struct Node* nd,struct Node* parent)
             if(parent_gen==CompSt0)
             {
                 copy_type(nd->return_type,parent->return_type);
+                
             }
             // StmtList -> Stmt StmtList
             else if(parent_gen==StmtList0)
             {
                 copy_type(nd->return_type,parent->return_type);
+                
             }
             break;
         case Stmt:
-            // StmtList -> Stmt StmtList
-            if(parent_gen==StmtList0)
-            {
-                copy_type(nd->return_type,parent->return_type);
-            }
+            copy_type(nd->return_type,parent->return_type);
+            // // StmtList -> Stmt StmtList
+            // if(parent_gen==StmtList0)
+            // {
+                
+            // }
             break;
         case ID:
             // VarDec -> ID
@@ -748,6 +766,7 @@ void syn_Exp(struct Node* nd)
                 check_l = kid_0->l_r == LEFT;
                 // 判断左右两边类型是否匹配
                 check_ok = compare_type(kid_0->type,kid_2->type);
+
                 // 赋值符号左边不是左值
                 if(!check_l)
                 {
@@ -1131,10 +1150,11 @@ void synthesized(struct Node* nd)
         case Stmt:
             if(kid_num==3)
             {
+                // Stmt -> RETURN Exp SEMI
                 if(nd->kids[0]->tag==RETURN)
                 {
                     if(!compare_type(nd->return_type,nd->kids[1]->type))
-                    {
+                    {                        
                         fprintf(stderr, "<语义错误> 第%d行，错误类型8: 函数返回值类型不正确\n",nd->row);
                     }
                 }
@@ -1150,7 +1170,6 @@ void synthesized(struct Node* nd)
                     fprintf(stderr, "<语义错误> 第%d行，错误类型21: 只有INT类型才能作为if和while语句的条件\n",nd->row);
                 }
             }
-
             break;
         case Exp:
             syn_Exp(nd);
@@ -1216,6 +1235,7 @@ void synthesized(struct Node* nd)
             if(kid_num==1)
             {
                 struct Node* kid_0 = nd->kids[0];
+
                 nd->type->kind = STRUCTURE;
                 FieldList tem_structure = (FieldList) malloc(sizeof(struct FieldList_));
                 
@@ -1233,6 +1253,8 @@ void synthesized(struct Node* nd)
             {
                 struct Node* kid_0 = nd->kids[0];
                 struct Node* kid_2 = nd->kids[2];
+
+                
 
                 // 将DecList中的元素添加至Type中
                 copy_type(nd->type,kid_2->type);
@@ -1255,6 +1277,7 @@ void synthesized(struct Node* nd)
             {
                 struct Node* kid_0 = nd->kids[0];
                 nd->name = (char*) malloc(strlen(kid_0->name)+1);
+
                 strcpy(nd->name,kid_0->name);
                 copy_type(nd->type,kid_0->type);
             }
@@ -1403,6 +1426,7 @@ void synthesized(struct Node* nd)
                 nd->name = (char*) malloc(strlen(kid_0->name)+1);
                 strcpy(nd->name,kid_0->name);
                 copy_type(nd->type,kid_0->type);
+
             }
             // VarDec -> VarDec LB INT RB
             else if(kid_num==4)
@@ -1590,15 +1614,17 @@ void synthesized(struct Node* nd)
             // Args -> Exp COMMA Args
             else
             {
+                
                 copy_type(nd->type,nd->kids[2]->type);
                 FieldList new_field = (FieldList) malloc(sizeof(struct FieldList_));
-                nd->type->u.structure->name = (char*) malloc(5);
-                strcpy(nd->type->u.structure->name,"anon");
+                new_field->name = (char*) malloc(5);
+                strcpy(new_field->name,"anon");
                 new_field->type = (Type) malloc(sizeof(struct Type_));
                 copy_type(new_field->type,nd->kids[0]->type);
 
                 new_field->tail =  nd->type->u.structure->tail;
                 nd->type->u.structure->tail = new_field;
+                // printf("debug: 进来2了\n");
             }
             break;
         case ID:
@@ -1612,6 +1638,7 @@ void synthesized(struct Node* nd)
                     case VAR:
                     case FIELD:
                         copy_type(nd->type,nd->inh_type);
+                        
                         break;
                     // FUNC和STRU不可以一开始就确定具体结构，所有要留到上一级的综合属性中计算
                     case FUNC:
@@ -1667,8 +1694,8 @@ void synthesized(struct Node* nd)
 
 void r_s(struct Node* nd)
 {
-    // treePrintLevel(nd);
-    // printf("inh\n");
+    treePrintLevel(nd);
+    printf("inh\n");
 
     if(nd->if_empty==1)
     {
@@ -1688,8 +1715,8 @@ void r_s(struct Node* nd)
     // 处理综合属性
     synthesized(nd);
 
-    // treePrintLevel(nd);
-    // printf("syn\n");
+    treePrintLevel(nd);
+    printf("syn\n");
 }
 
 void recursive_semantic(struct Node* nd)

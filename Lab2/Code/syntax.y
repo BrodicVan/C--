@@ -127,11 +127,12 @@ StmtList : {$$=createNode(0,StmtList,NULL,0,0);$$->if_empty=1;}
 
 Stmt :Exp SEMI {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,2,$1,$2);}
 | Exp error {my_yyerror("missing ';'");}
-| CompSt {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,1,$1);}
+| CompSt {$$ = createNode($1->row,Stmt,NULL,0,0);$$->generation = Stmt0;addNodes($$,1,$1);}
 | RETURN Exp SEMI {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,3,$1,$2,$3);}
 | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,5,$1,$2,$3,$4,$5);}
 | IF LP Exp RP Stmt ELSE Stmt {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,7,$1,$2,$3,$4,$5,$6,$7);}
 | WHILE LP Exp RP Stmt {$$ = createNode($1->row,Stmt,NULL,0,0);addNodes($$,5,$1,$2,$3,$4,$5);} 
+
 | error SEMI {my_yyerror("error Stmt");}
 | IF LP error RP Stmt %prec LOWER_THAN_ELSE {my_yyerror("error IF Stmt");}
 | IF LP Exp RP error ELSE Stmt {my_yyerror("error IF Stmt");}
