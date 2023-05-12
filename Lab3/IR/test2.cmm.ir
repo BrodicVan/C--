@@ -6,21 +6,21 @@ LABEL label1 :
 RETURN v1
 GOTO label3
 LABEL label2 :
-t7 := v1 - #1
-ARG t7
-t6 := CALL fact
-t4 := v1 * t6
-RETURN t4
+t3 := v1 - #1
+ARG t3
+t2 := CALL fact
+t1 := v1 * t2
+RETURN t1
 LABEL label3 :
 FUNCTION main :
-READ t12
-v2 := t12
+READ t4
+v2 := t4
 IF v2 > #1 GOTO label4
 GOTO label5
 LABEL label4 :
 ARG v2
-t16 := CALL fact
-v3 := t16
+t5 := CALL fact
+v3 := t5
 GOTO label6
 LABEL label5 :
 v3 := #1

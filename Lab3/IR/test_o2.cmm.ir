@@ -1,10 +1,10 @@
 FUNCTION add :
 PARAM v1
-t6 := #0 * #4
+t4 := #0 * #4
+t5 := v1 + t4
+t6 := #1 * #4
 t7 := v1 + t6
-t10 := #1 * #4
-t11 := v1 + t10
-t1 := *t7 + *t11
+t1 := *t5 + *t7
 RETURN t1
 FUNCTION main :
 DEC v2 8
@@ -19,28 +19,28 @@ LABEL label4 :
 IF v5 < #2 GOTO label5
 GOTO label6
 LABEL label5 :
-t22 := v5 * #4
-t23 := &v2 + t22
-t24 := v4 + v5
-*t23 := t24
-t28 := v5 + #1
-v5 := t28
+t9 := v5 * #4
+t10 := &v2 + t9
+t11 := v4 + v5
+*t10 := t11
+t12 := v5 + #1
+v5 := t12
 GOTO label4
 LABEL label6 :
-t36 := #0 * #4
-t37 := &v3 + t36
-t39 := v4 * #4
-t40 := t37 + t39
+t15 := #0 * #4
+t16 := &v3 + t15
+t17 := v4 * #4
+t18 := t16 + t17
 ARG &v2
-t41 := CALL add
-*t40 := t41
-t49 := #0 * #4
-t50 := &v3 + t49
-t52 := v4 * #4
-t53 := t50 + t52
-WRITE *t53
-t55 := v4 + #1
-v4 := t55
+t19 := CALL add
+*t18 := t19
+t22 := #0 * #4
+t23 := &v3 + t22
+t24 := v4 * #4
+t25 := t23 + t24
+WRITE *t25
+t26 := v4 + #1
+v4 := t26
 v5 := #0
 GOTO label1
 LABEL label3 :

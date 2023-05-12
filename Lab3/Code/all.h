@@ -150,7 +150,7 @@ void insert_common(Common common);
 */
  
 
-// IR的属性，没用上
+// IR的属性
 typedef struct IR_Attribute_* IR_Attribute;
 struct IR_Attribute_
 {
@@ -212,7 +212,8 @@ struct InterCode
         struct { Operand place; } read_write_arg_param_return;// READ_IR、WRITE_IR、PARAM_IR、RETURN_IR共用
         struct { Operand left; char* func; } func_call;// FUNC_IR、CALL_IR共用
         struct { Operand place; int size; } dec;
-    } u;  
+    } u;
+    
 };
 
 
