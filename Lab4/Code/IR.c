@@ -2,15 +2,15 @@
 #include <stdarg.h>
 #include <math.h>
 
-
 int cur_label;
 int cur_tem_no;
 int cur_line;
-InterCodes head;// 存储IR链表，head不存放
-InterCodes tail;// IR链表的最后一个元素
-Operand_List ope_list_head;// 存储变量操作数链表，head不存放，用来记录一个作用域已经声明的地址
+InterCodes ir_head;// 存储IR链表，head不存放
+InterCodes ir_tail;// IR链表的最后一个元素
+IR_Operand_List ope_list_head;// 存储变量操作数链表，head不存放，用来记录一个作用域已经声明的地址
 int field_layer;// 结构体取域的层数
 int array_layer;// 数组取域的层数
+
 
 // code只用一次，用完就可以直接释放
 
@@ -20,10 +20,10 @@ void init_IR()
 
     cur_tem_no = 1;
     cur_line = 0;
-    head = (InterCodes) malloc(sizeof(struct InterCodes_)); 
-    ope_list_head = (Operand_List) malloc(sizeof(struct Operand_List_));
+    ir_head = (InterCodes) malloc(sizeof(struct InterCodes_)); 
+    ope_list_head = (IR_Operand_List) malloc(sizeof(struct IR_Operand_List_));
     ope_list_head->nxt = NULL;
-    tail = NULL;
+    ir_tail = NULL;
     field_layer = 0;
     array_layer = 0;
 }
@@ -31,43 +31,43 @@ void init_IR()
 void insert_InterCodes(InterCodes new_ir)
 {
     // 链表为空
-    if(tail==NULL)
+    if(ir_tail==NULL)
     {
-        head->nxt = new_ir;
-        new_ir->prev = head;
+        ir_head->nxt = new_ir;
+        new_ir->prev = ir_head;
         
     }
     // 链表非空
     else
     {
-        tail->nxt = new_ir;
-        new_ir->prev = tail;
+        ir_tail->nxt = new_ir;
+        new_ir->prev = ir_tail;
     }
     // 更新尾部元素
-    tail = new_ir;
+    ir_tail = new_ir;
 }
 
 
 
-void insert_Operand_List(Operand_List new_ope_list)
+void insert_Operand_List(IR_Operand_List new_ope_list)
 {
     new_ope_list->nxt = ope_list_head->nxt;
     ope_list_head->nxt = new_ope_list;
 }
 
-void add_Operand(Operand ope)
+void add_Operand(IR_Operand ope)
 {
     // printf("debug: add_Operand %d\n",ope->u.no);
-    Operand_List new_ope_list = (Operand_List) malloc(sizeof(struct Operand_List_));
+    IR_Operand_List new_ope_list = (IR_Operand_List) malloc(sizeof(struct IR_Operand_List_));
     new_ope_list->ope = ope;
     insert_Operand_List(new_ope_list);
 }
 
-Operand search_Operand_List(int kind,int no)
+IR_Operand search_Operand_List(int kind,int no)
 {
     // printf("debug: search_Operand_List开始\n");
-    Operand_List cur_ope_list = ope_list_head->nxt;
-    Operand res_ope = NULL;
+    IR_Operand_List cur_ope_list = ope_list_head->nxt;
+    IR_Operand res_ope = NULL;
     while(cur_ope_list!=NULL)
     {
         // printf("debug: search_Operand_List 进入循环\n");
@@ -92,22 +92,22 @@ Operand search_Operand_List(int kind,int no)
 }
 
 // 不是深度释放内存，只是释放链表
-void clear_Operand_List()
+void clear_IR_Operand_List(IR_Operand_List head)
 {
-    Operand_List cur_ope_list = ope_list_head->nxt;
-    Operand_List tem_ope_list;
+    IR_Operand_List cur_ope_list = head->nxt;
+    IR_Operand_List tem_ope_list;
     while(cur_ope_list!=NULL)
     {
         tem_ope_list = cur_ope_list;
         cur_ope_list = cur_ope_list->nxt;
         free(tem_ope_list);
     }
-    ope_list_head->nxt = NULL;
+    head->nxt = NULL;
 }
 
 void clear_InterCodes()
 {
-    InterCodes cur_ir = head->nxt;
+    InterCodes cur_ir = ir_head->nxt;
     InterCodes next_ir = cur_ir->nxt;
     while(next_ir!=NULL)
     {
@@ -133,12 +133,12 @@ int get_num_len(int num)
 
 // 根据Operand返回对应place的字符串，一般只会对VARIABLE和ADDRESS进行操作
 // 返回一个指向新分配空间的地址
-char* ope2str(Operand op)
+char* ope2str(IR_Operand op)
 {
     char* res_str;
     int no = op->u.no;
     int val = op->u.value;
-    int num_len = op->kind==CONSTANT?get_num_len(val):get_num_len(no); 
+    int num_len = op->kind==CONSTANT_IR?get_num_len(val):get_num_len(no); 
     res_str = (char*) malloc(num_len+2+(op->if_take_addr||op->if_deref));
     char* cur_pos = res_str;
     if(op->if_take_addr)
@@ -160,7 +160,7 @@ char* ope2str(Operand op)
     {
         sprintf(cur_pos,"t%d",no); 
     }
-    else if(op->kind==CONSTANT)
+    else if(op->kind==CONSTANT_IR)
     {
         sprintf(cur_pos,"#%d",val);
     }
@@ -195,12 +195,12 @@ int get_field_pos(Type type,char* field_name)
     return 0;
 }
 
-void copy_operand(Operand dst,Operand src)
+void copy_operand(IR_Operand dst,IR_Operand src)
 {
-    memcpy(dst,src,sizeof(struct Operand_));
+    memcpy(dst,src,sizeof(struct IR_Operand_));
 }
 
-// 获取数组元素的相对位置，没有使用
+// 获取数组元素的相对位置
 int get_item_pos(Type type,int idx)
 {
     if(type->kind!=ARRAY)
@@ -216,7 +216,7 @@ void output_IRs(InterCodes head,char* file_name)
 {
     FILE* IR_file;
     IR_file = fopen(file_name,"w");
-    printf("debug: %s\n",file_name);
+    // printf("debug: %s\n",file_name);
     InterCodes cur_ir = head->nxt;
     while(cur_ir!=NULL)
     {
@@ -224,9 +224,7 @@ void output_IRs(InterCodes head,char* file_name)
         switch (cur_ir->code.ir_kind)
         {
             case ASSIGN_IR:
-
                 fprintf(IR_file,"%s := ",ope2str(cur_ir->code.u.assign.left));
-
                 fprintf(IR_file,"%s",ope2str(cur_ir->code.u.assign.right));
                 break; 
             case ADD_IR:
@@ -284,7 +282,7 @@ void output_IRs(InterCodes head,char* file_name)
 }
 
 // 创建ASSIGN_IR，并插入IR链表中
-void generate_ASSIGN_IR(Operand left,Operand right)
+void generate_ASSIGN_IR(IR_Operand left,IR_Operand right)
 {
     if(left==NULL || right==NULL)
     {
@@ -308,7 +306,7 @@ void generate_ASSIGN_IR(Operand left,Operand right)
 
 // 创建ADD_IR，并插入IR链表中
 // if_load: 是否是存到result代表的地址中，此时result代表一个地址
-void generate_binary_IR(int IR_kind,Operand result,Operand op1,Operand op2)
+void generate_binary_IR(int IR_kind,IR_Operand result,IR_Operand op1,IR_Operand op2)
 {
     // printf("debug: gen_binary_IR\n");
     if(result==NULL || op1==NULL || op2==NULL)
@@ -354,7 +352,7 @@ void generate_uncondition_IR(int ir_kind,int label)
 }
 
 // 创建IF_IR，并插入IR链表中
-void generate_condition_IR(Operand left,Operand right,int label,char* relop)
+void generate_condition_IR(IR_Operand left,IR_Operand right,int label,char* relop)
 {
     // printf("debug: generate_condition_IR\n");
     InterCodes new_ir = (InterCodes) malloc(sizeof(struct InterCodes_));
@@ -368,7 +366,7 @@ void generate_condition_IR(Operand left,Operand right,int label,char* relop)
 }
 
 // 创建RETURN_IR，并插入IR链表中
-void generate_return_IR(Operand return_operand)
+void generate_return_IR(IR_Operand return_operand)
 {
     InterCodes new_ir = (InterCodes) malloc(sizeof(struct InterCodes_));
     new_ir->code.ir_kind = RETURN_IR;
@@ -383,9 +381,9 @@ int if_direct(struct Node* nd)
     return nd->kid_num==1&&(nd->kids[0]->tag==ID||nd->kids[0]->tag==INT);
 }
 // 创建空操作数，返回一个指向新开辟空间的指针，留到后面处理,免得占用临时变量序号
-Operand create_empty()
+IR_Operand create_empty()
 {
-    Operand res = (Operand) malloc(sizeof(struct Operand_));
+    IR_Operand res = (IR_Operand) malloc(sizeof(struct IR_Operand_));
     res->kind = 0;
     res->u.no = 0;
     res->if_addr = 0;
@@ -395,9 +393,9 @@ Operand create_empty()
 }
 
 // 创建一个新的tem，返回一个指向新开辟空间的指针
-Operand create_tem()
+IR_Operand create_tem()
 {
-    Operand res = (Operand) malloc(sizeof(struct Operand_));
+    IR_Operand res = (IR_Operand) malloc(sizeof(struct IR_Operand_));
     res->kind = TEMP;
     res->u.no = cur_tem_no++;
     res->if_addr = 0;
@@ -413,11 +411,11 @@ int create_label()
 }
 
 // 创建常数操作数，返回一个指向新开辟空间的指针
-Operand create_const(int val)
+IR_Operand create_const(int val)
 {
     // 创建常数操作数
-    Operand CONST_place = (Operand) malloc(sizeof(struct Operand_));
-    CONST_place->kind = CONSTANT;
+    IR_Operand CONST_place = (IR_Operand) malloc(sizeof(struct IR_Operand_));
+    CONST_place->kind = CONSTANT_IR;
     CONST_place->u.value = val;
     CONST_place->if_addr = 0;
     CONST_place->if_deref = 0;
@@ -501,8 +499,8 @@ void translate_Args(struct Node* nd,Arg_List arg_list,FieldList arg_type,int arg
     if(kid_num==1)
     {
         // printf("debug: Args断点1-1\n");
-        Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-        // TODO: 根据参数类型判断是否保留地址
+        IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+        // 根据参数类型判断是否保留地址
         translate_Exp(nd->kids[0],t_1,if_addr);
         // printf("debug: Args断点1-2\n");
         Arg_List new_arg = (Arg_List) malloc(sizeof(struct Arg_List_));
@@ -515,7 +513,7 @@ void translate_Args(struct Node* nd,Arg_List arg_list,FieldList arg_type,int arg
     else if(kid_num==3)
     {
         // printf("debug: Args断点2-1\n");
-        Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+        IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
         translate_Exp(nd->kids[0],t_1,if_addr);
         Arg_List new_arg = (Arg_List) malloc(sizeof(struct Arg_List_));
         new_arg->arg = t_1;
@@ -538,7 +536,7 @@ void translate_Args(struct Node* nd,Arg_List arg_list,FieldList arg_type,int arg
 // 尽可能地把地址place往下传，知道不能传为止
 // remain_addr——在某些情况下，结构体取域和数组取元素只是获取到某个地址(在层数不足的情况下)，
 // 这个remian_addr只需根据被赋值的对象的类型判断，一般只在传参过程中使用
-void translate_Exp(struct Node* nd, Operand place,int remain_addr)
+void translate_Exp(struct Node* nd, IR_Operand place,int remain_addr)
 {
     // printf("debug: translate_Exp begin\n");
     
@@ -554,7 +552,7 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         {
             int val = kid_0->value.type_int;
 
-            place->kind = CONSTANT;
+            place->kind = CONSTANT_IR;
             place->u.value = val;
 
         }
@@ -563,7 +561,7 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         {            
             Var var = search_var(kid_0->name,1);
             int var_no = var->var_no;
-            Operand var_place = search_Operand_List(VARIABLE,var_no);
+            IR_Operand var_place = search_Operand_List(VARIABLE,var_no);
             copy_operand(place,var_place);
             // 是否取地址只取决于这个变量当前是否代表一个地址与其是否为非基础类型
             place->if_take_addr = (!var_place->if_addr)&&var->type->kind!=BASIC;
@@ -576,7 +574,7 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> MINUS Exp
         if(kid_0->tag==MINUS)
         {
-            Operand t_1 = if_direct(nd->kids[1])?create_empty():create_tem();
+            IR_Operand t_1 = if_direct(nd->kids[1])?create_empty():create_tem();
             translate_Exp(kid_1,t_1,remain_addr);
             generate_binary_IR(SUB_IR,place,create_const(0),t_1);
         }
@@ -606,22 +604,22 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
             if(kid_0->generation==Exp3)
             {
                 Var var = search_var(kid_0->kids[0]->name,1);
-                Operand var_place = search_Operand_List(VARIABLE,var->var_no);
-                Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
+                IR_Operand var_place = search_Operand_List(VARIABLE,var->var_no);
+                IR_Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
                 translate_Exp(kid_2,t_1,0);// 因为不存在结构体赋值，所以remain_addr是0
                 generate_ASSIGN_IR(var_place,t_1);
             }
             // Exp_1 -> Exp DOT ID
             else if(kid_0->generation==Exp2)
             {
-                Operand ope = create_tem();
+                IR_Operand ope = create_tem();
                 
                 translate_Exp(kid_0,ope,1);// 得到的ope是一个地址
                 ope->if_addr = 1;
-                Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
+                IR_Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
                 translate_Exp(kid_2,t_1,0);// 因为不存在结构体赋值，所以remain_addr是0
                 // 为什么要复制？因为后面ope_copy解引用,而ope不需要，复用会相互干扰
-                Operand ope_copy = (Operand) malloc(sizeof(struct Operand_));
+                IR_Operand ope_copy = (IR_Operand) malloc(sizeof(struct IR_Operand_));
                 copy_operand(ope_copy,ope);
                 ope_copy->if_deref = 1;
                 generate_ASSIGN_IR(ope_copy,t_1);
@@ -629,14 +627,14 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
             // Exp_1 -> Exp LB Exp RB
             else if(kid_0->kid_num==4&&kid_0->kids[1]->tag==LB)
             {
-                Operand ope = if_direct(nd->kids[0])?create_empty():create_tem();
+                IR_Operand ope = if_direct(nd->kids[0])?create_empty():create_tem();
                 
                 translate_Exp(kid_0,ope,1);// 得到的ope是一个地址
                 ope->if_addr = 1;
-                Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
+                IR_Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
                 translate_Exp(kid_2,t_1,0);// 因为不存在结构体赋值，所以remain_addr是0
                 // 为什么要复制？因为后面ope_copy解引用,而ope不需要，复用会相互干扰
-                Operand ope_copy = (Operand) malloc(sizeof(struct Operand_));
+                IR_Operand ope_copy = (IR_Operand) malloc(sizeof(struct IR_Operand_));
                 copy_operand(ope_copy,ope);
                 ope_copy->if_deref = 1;
                 generate_ASSIGN_IR(ope_copy,t_1);
@@ -649,8 +647,8 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> Exp PLUS Exp
         else if(kid_1->tag==PLUS)
         {
-            Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-            Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
+            IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
             translate_Exp(kid_0,t_1,remain_addr);
             translate_Exp(kid_2,t_2,remain_addr);
             generate_binary_IR(ADD_IR,place,t_1,t_2);
@@ -658,8 +656,8 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> Exp MINUS Exp
         else if(kid_1->tag==MINUS)
         {
-            Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-            Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
+            IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
             translate_Exp(kid_0,t_1,remain_addr);
             translate_Exp(kid_2,t_2,remain_addr);
             generate_binary_IR(SUB_IR,place,t_1,t_2);
@@ -668,8 +666,8 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> Exp STAR Exp
         else if(kid_1->tag==STAR)
         {
-            Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-            Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
+            IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
             translate_Exp(kid_0,t_1,remain_addr);
             translate_Exp(kid_2,t_2,remain_addr);
             generate_binary_IR(MUL_IR,place,t_1,t_2);
@@ -677,8 +675,8 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> Exp DIV Exp
         else if(kid_1->tag==DIV)
         {
-            Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-            Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
+            IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
             translate_Exp(kid_0,t_1,remain_addr);
             translate_Exp(kid_2,t_2,remain_addr);
             generate_binary_IR(DIV_IR,place,t_1,t_2); 
@@ -732,17 +730,17 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
         // Exp -> Exp DOT ID
         else if(kid_1->tag==DOT)
         {
-            // TODO: 结构体取域
+            // 结构体取域
             // 默认head_addr被赋值了结构体的起始地址
             field_layer++;
 
             // 计算出头地址
-            Operand head_addr = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand head_addr = if_direct(nd->kids[0])?create_empty():create_tem();
             translate_Exp(kid_0,head_addr,1);
 
             // 计算出加上偏移的地址
             int rel_position = get_field_pos(kid_0->type,kid_2->name);
-            Operand actual_addr = create_tem();
+            IR_Operand actual_addr = create_tem();
             
             generate_binary_IR(ADD_IR,actual_addr,head_addr,create_const(rel_position));
 
@@ -795,7 +793,7 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
                 // 不允许*t1 = CALL func
                 if(place->if_take_addr)
                 {
-                    Operand t_1 = create_tem();
+                    IR_Operand t_1 = create_tem();
                     
                     InterCodes cur_ir = (InterCodes) malloc(sizeof(struct InterCodes_));
                     cur_ir->code.ir_kind = CALL_IR;
@@ -824,17 +822,17 @@ void translate_Exp(struct Node* nd, Operand place,int remain_addr)
             array_layer++;
 
             // 计算首地址
-            Operand head_addr = if_direct(nd->kids[0])?create_empty():create_tem();
+            IR_Operand head_addr = if_direct(nd->kids[0])?create_empty():create_tem();
             translate_Exp(kid_0,head_addr,1);
             // 计算下标
-            Operand idx = if_direct(nd->kids[2])?create_empty():create_tem();
+            IR_Operand idx = if_direct(nd->kids[2])?create_empty():create_tem();
             translate_Exp(nd->kids[2],idx,0);
             
             // 计算偏移量
-            Operand bia = create_tem();
+            IR_Operand bia = create_tem();
             generate_binary_IR(MUL_IR,bia,idx,create_const(kid_0->type->u.array.elem->size));
             // 计算准确地址
-            Operand actual_addr = create_tem();
+            IR_Operand actual_addr = create_tem();
             
             generate_binary_IR(ADD_IR,actual_addr,head_addr,bia);
             // 同结构体取域
@@ -868,8 +866,8 @@ void translate_Cond(struct Node* nd,int label_true,int label_false)
     else if(kid_num==3 && nd->kids[1]->tag==RELOP)
     {
 
-        Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
-        Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
+        IR_Operand t_1 = if_direct(nd->kids[0])?create_empty():create_tem();
+        IR_Operand t_2 = if_direct(nd->kids[2])?create_empty():create_tem();
         translate_Exp(nd->kids[0],t_1,0);
         translate_Exp(nd->kids[2],t_2,0);
         generate_condition_IR(t_1,t_2,label_true,nd->kids[1]->name);
@@ -895,7 +893,7 @@ void translate_Cond(struct Node* nd,int label_true,int label_false)
     }
     else
     {
-        Operand t_1 = if_direct(nd)?create_empty():create_tem();
+        IR_Operand t_1 = if_direct(nd)?create_empty():create_tem();
         translate_Exp(nd,t_1,0);
         generate_condition_IR(t_1,create_const(0),label_true,"!=");
         generate_uncondition_IR(GOTO_IR,label_false);
@@ -917,13 +915,13 @@ void translate_Stmt(struct Node* nd)
     // Stmt -> Exp SEMI
     else if(kid_num==2)
     {
-        Operand t_1 = create_empty();
+        IR_Operand t_1 = create_empty();
         translate_Exp(nd->kids[0],t_1,0);
     }
     // Stmt ->  RETURN Exp SEMI
     else if (kid_num==3)
     {
-        Operand t_1 = if_direct(nd->kids[1])?create_empty():create_tem();
+        IR_Operand t_1 = if_direct(nd->kids[1])?create_empty():create_tem();
         // printf("debug: translate_Stmt断点：处理RETURN语句\n");
         
         // 根据假设，只会返回基本类型
@@ -994,7 +992,7 @@ void translate_VarDec(struct Node* nd,int param)
     int var_no = var->var_no;
 
     // 创建ID操作数
-    Operand VAR_place = (Operand) malloc(sizeof(struct Operand_));
+    IR_Operand VAR_place = (IR_Operand) malloc(sizeof(struct IR_Operand_));
     VAR_place->kind = VARIABLE;
     VAR_place->if_addr = param&&var->type->kind!=BASIC?1:0;
     VAR_place->u.no = var_no;
@@ -1126,13 +1124,13 @@ void translate_Dec(struct Node* nd)
     // Dec -> VarDec ASSIGNOP Exp
     else if(kid_num==3)
     {
-        Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
+        IR_Operand t_1 = if_direct(nd->kids[2])?create_empty():create_tem();
         translate_Exp(nd->kids[2],t_1,0);
         translate_VarDec(nd->kids[0],0);
         Var var = search_var(nd->kids[0]->kids[0]->name,1);
         int var_no = var->var_no;
         // 创建ID操作数
-        Operand VAR_place = (Operand) malloc(sizeof(struct Operand_));
+        IR_Operand VAR_place = (IR_Operand) malloc(sizeof(struct IR_Operand_));
         VAR_place->kind = VARIABLE;
         VAR_place->u.no = var_no;
         VAR_place->if_addr = 0;
@@ -1272,7 +1270,7 @@ void translate_ExtDef(struct Node* nd)
     {
         printf("note: translate_ExtDef error\n");
     }
-    clear_Operand_List();
+    clear_IR_Operand_List(ope_list_head);
     // printf("debug: translate_ExtDef end\n");
 }
 
@@ -1318,8 +1316,10 @@ void generate_IR(struct Node* nd,char* ir_file)
         return;
     }
     init_IR();
-    printf("debug: 开始生成IR\n");
+    printf("生成IR过程开始\n");
     translate_Program(nd);
-    printf("debug: 完成生成IR\n");
-    output_IRs(head,ir_file);
+    printf("生成IR过程结束\n");
+    // printf("输出IR过程开始\n");
+    // output_IRs(ir_head,ir_file);
+    // printf("输出IR过程结束\n");
 }

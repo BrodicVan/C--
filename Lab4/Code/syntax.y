@@ -30,6 +30,8 @@
 %token <type_node> LC RC
 %token <type_node> STRUCT RETURN IF ELSE WHILE
 
+
+
 %right <type_node> ASSIGNOP
 %left <type_node> OR
 %left <type_node> AND

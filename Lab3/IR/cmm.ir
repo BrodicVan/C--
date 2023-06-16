@@ -1,0 +1,18 @@
+FUNCTION fact :
+PARAM v1
+RETURN #1
+FUNCTION main :
+DEC v3 24
+t2 := #0 * #4
+t3 := &v3 + t2
+*t3 := #3
+t5 := #1 * #4
+t6 := &v3 + t5
+t8 := #0 * #4
+t9 := &v3 + t8
+*t6 := *t9
+ARG &v3
+t10 := CALL fact
+v2 := t10
+WRITE v2
+RETURN #0

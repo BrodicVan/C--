@@ -19,8 +19,8 @@ struct Node *createNode(int r,int tag, char *text,int i,double d)
     nd->l_r = RIGHT;
     nd->type = (Type) malloc(sizeof(struct Type_));
     nd->inh_type = (Type) malloc(sizeof(struct Type_));
-    nd->return_type = (Type) malloc(sizeof(struct Type_));
     nd->VarDec_type = (Type) malloc(sizeof(struct Type_));
+    nd->return_type = (Type) malloc(sizeof(struct Type_));
     nd->generation = Common_Generation;
     nd->id_type = VAR;
     nd->if_structspecifier = 0;

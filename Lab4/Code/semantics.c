@@ -315,20 +315,24 @@ void print_cache()
 void copy_type(Type dst,Type src)
 {
     // printf("debug: 进来copy_type了\n");
+    // printf("%d\n",dst==NULL);
     dst->kind = src->kind;
     dst->size = src->size;
     if(src->kind==BASIC)
     {      
+        // printf("debug: 进来copy_type BASIC\n");
         dst->u.basic = src->u.basic;  
     }
     else if(src->kind==ARRAY)
     {
+        // printf("debug: 进来copy_type ARRAY\n");
         dst->u.array.elem = (Type) malloc(sizeof(struct Type_));
         copy_type(dst->u.array.elem,src->u.array.elem);
         dst->u.array.size = src->u.array.size;
     }
     else if(src->kind==STRUCTURE)
     {
+        // printf("debug: 进来copy_type STRUCTURE\n");
         // printf("debug: 进来STRUCTURE了\n");
         FieldList tem_head = (FieldList) malloc(sizeof(struct FieldList_));// 创建一个链表头，方便找
         tem_head->tail = NULL;
@@ -816,7 +820,7 @@ void syn_Exp(struct Node* nd)
                 // 右类型需要是基础类型
                 if(!check_r)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型才能进行求负运算\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型才能进行求负运算\n",kid_1->row);fail=1;
                     nd->type->kind == UNKNOWN;
                 }
                 else
@@ -830,7 +834,7 @@ void syn_Exp(struct Node* nd)
                 // 右类型需要是INT
                 if(!check_r)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有INT类型才能进行逻辑运算\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有INT类型才能进行逻辑运算\n",kid_1->row);fail=1;
                 }
                 nd->type->kind == BASIC;
                 // 默认给予正确的类型
@@ -857,13 +861,13 @@ void syn_Exp(struct Node* nd)
                 // 赋值符号左边不是左值
                 if(!check_l)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型6: 赋值号左边出现一个只有右值的表达式\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型6: 赋值号左边出现一个只有右值的表达式\n",kid_1->row);fail=1;
                     nd->type->kind == UNKNOWN;
                 }
                 // 左右两边类型不匹配
                 else if(!check_ok)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型5: 赋值号两边的表达式类型不匹配\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型5: 赋值号两边的表达式类型不匹配\n",kid_1->row);fail=1;
                     nd->type->kind == UNKNOWN;
                 }
                 else
@@ -890,7 +894,7 @@ void syn_Exp(struct Node* nd)
                 // 左右类型都需要是INT
                 if(!(check_l && check_r))
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有INT类型才能进行逻辑运算\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有INT类型才能进行逻辑运算\n",kid_1->row);fail=1;
                 }
                 nd->type->kind == BASIC;
                 // 默认给予正确的类型
@@ -906,12 +910,12 @@ void syn_Exp(struct Node* nd)
                 // 只有基本类型可以进行关系运算
                 if(!(check_l && check_r))
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型才能进行关系运算\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型才能进行关系运算\n",kid_1->row);fail=1;
                 }
                 // 左右两边类型不匹配
                 else if(!check_ok)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 关系运算的操作数类型不匹配\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 关系运算的操作数类型不匹配\n",kid_1->row);fail=1;
                 }
                 
                 nd->type->kind == BASIC;
@@ -932,13 +936,13 @@ void syn_Exp(struct Node* nd)
                     // 非结构体不能取域
                     if(!check_l)
                     {
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型13: 对非结构体型变量使用“.”操作符\n",kid_1->row);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型13: 对非结构体型变量使用“.”操作符\n",kid_1->row);fail=1;
                         nd->type->kind = UNKNOWN;
                     }
                     // 结构体没有对应的域
                     else if(!check_ok)
                     {
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型14: 访问结构体中未定义过的域(%s)\n",kid_1->row,kid_2->name);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型14: 访问结构体中未定义过的域(%s)\n",kid_1->row,kid_2->name);fail=1;
                         nd->type->kind = UNKNOWN;
                     }
                     else
@@ -964,7 +968,7 @@ void syn_Exp(struct Node* nd)
                 // 函数未定义
                 if(func_common==NULL)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型11: 函数(%s)在调用时未经定义\n",kid_0->row,kid_0->name);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型11: 函数(%s)在调用时未经定义\n",kid_0->row,kid_0->name);fail=1;
                     nd->type->kind = UNKNOWN;
                 }
                 // 函数已定义
@@ -973,7 +977,7 @@ void syn_Exp(struct Node* nd)
                     // 参数不匹配
                     if(func_common->type->u.structure->tail!=NULL)
                     {
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail=1;
                     }
                     copy_type(nd->type,func_common->type->u.structure->type);
                 }
@@ -989,13 +993,13 @@ void syn_Exp(struct Node* nd)
                 // 只有基本类型可以进行算数运算
                 if(!(check_l && check_r))
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型可以进行算术运算\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 只有基本类型可以进行算术运算\n",kid_1->row);fail=1;
                     nd->type->kind = UNKNOWN;
                 }
                 // 左右两边类型不匹配
                 else if(!check_ok)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 算术运算中的操作数类型不匹配\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型7: 算术运算中的操作数类型不匹配\n",kid_1->row);fail=1;
                     nd->type->kind = UNKNOWN;
                     
                 }
@@ -1024,12 +1028,12 @@ void syn_Exp(struct Node* nd)
             if(!(kid_0->type->kind==UNKNOWN ||check_l))
             {
                 // 此处在某些情况下无法获取变量名：(a+b)[2]
-                fprintf(stderr, "<语义错误> 第%d行，错误类型10: 对非数组型变量使用“[…]”（数组访问）操作符\n",kid_0->row);fail = 1;
+                fprintf(stderr, "<语义错误> 第%d行，错误类型10: 对非数组型变量使用“[…]”（数组访问）操作符\n",kid_0->row);fail=1;
                 nd->type->kind = UNKNOWN;
             }
             if(!check_r)
             {
-                fprintf(stderr, "<语义错误> 第%d行，错误类型12: 数组访问操作符“[…]”中出现非整数\n",kid_2->row);fail = 1;
+                fprintf(stderr, "<语义错误> 第%d行，错误类型12: 数组访问操作符“[…]”中出现非整数\n",kid_2->row);fail=1;
             }
 
             if(!check_l)
@@ -1050,7 +1054,7 @@ void syn_Exp(struct Node* nd)
             // 函数未定义
             if(func_common==NULL)
             {
-                fprintf(stderr, "<语义错误> 第%d行，错误类型2: 函数(%s)在调用时未经定义\n",kid_0->row,kid_0->name);fail = 1;
+                fprintf(stderr, "<语义错误> 第%d行，错误类型2: 函数(%s)在调用时未经定义\n",kid_0->row,kid_0->name);fail=1;
                 nd->type->kind = UNKNOWN;
             }
             // 函数已定义
@@ -1065,12 +1069,12 @@ void syn_Exp(struct Node* nd)
                 {
                     if(args==NULL)
                     {
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail=1;
                         break;
                     }
                     if(!compare_type(paras->type,args->type))
                     {
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的类型不匹配\n",kid_0->row,kid_0->name);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的类型不匹配\n",kid_0->row,kid_0->name);fail=1;
                     }
                     count += 1;
                     paras = paras->tail;
@@ -1078,7 +1082,7 @@ void syn_Exp(struct Node* nd)
                 }
                 if(args!=NULL)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型9: 函数(%s)调用时实参与形参的数目不匹配\n",kid_0->row,kid_0->name);fail=1;
                 }
                 copy_type(nd->type,func_common->type->u.structure->type);
             }
@@ -1098,7 +1102,7 @@ void syn_StructSpecifier(struct Node* nd)
         // 使用了未声明的结构体
         if(common==NULL)
         {
-            fprintf(stderr, "<语义错误> 第%d行，错误类型17: 直接使用未定义过的结构体(%s)来定义变量\n",nd->kids[1]->row,nd->kids[1]->name);fail = 1;
+            fprintf(stderr, "<语义错误> 第%d行，错误类型17: 直接使用未定义过的结构体(%s)来定义变量\n",nd->kids[1]->row,nd->kids[1]->name);fail=1;
             nd->struct_specifier = NULL;
         }
         else
@@ -1143,7 +1147,7 @@ void syn_StructSpecifier(struct Node* nd)
         // 该ID已经被变量占用
         if(old_var!=NULL)
         {
-            fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体或变量的名字重复\n",kid_1->row,struct_name);fail = 1;
+            fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体或变量的名字重复\n",kid_1->row,struct_name);fail=1;
         }
         // 该名称已被使用
         if(old_common!=NULL)
@@ -1151,13 +1155,13 @@ void syn_StructSpecifier(struct Node* nd)
             switch (old_common->kind)
             {
                 case STRU:
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体或变量的名字重复\n",kid_1->row,struct_name);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体或变量的名字重复\n",kid_1->row,struct_name);fail=1;
                     break;
                 case FUNC:
-                    // fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",kid_1->row,struct_name);fail = 1;
+                    // fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",kid_1->row,struct_name);
                     break;
                 case FIELD:
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体中的域名/自身内部域名重复\n",kid_1->row,struct_name);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型16：结构体名(%s)与前面定义过的结构体中的域名/自身内部域名重复\n",kid_1->row,struct_name);fail=1;
                     break;
                 default:
                     break;
@@ -1244,7 +1248,7 @@ void synthesized(struct Node* nd)
                 {
                     if(!compare_type(nd->return_type,nd->kids[1]->type))
                     {                        
-                        fprintf(stderr, "<语义错误> 第%d行，错误类型8: 函数返回值类型不正确\n",nd->row);fail = 1;
+                        fprintf(stderr, "<语义错误> 第%d行，错误类型8: 函数返回值类型不正确\n",nd->row);fail=1;
                     }
                 }
             }
@@ -1256,7 +1260,7 @@ void synthesized(struct Node* nd)
                                     (kid_2->type->kind==BASIC && kid_2->type->u.basic==INT);
                 if(!check_ok)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型21: 只有INT类型才能作为if和while语句的条件\n",nd->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型21: 只有INT类型才能作为if和while语句的条件\n",nd->row);fail=1;
                 }
             }
             break;
@@ -1391,12 +1395,12 @@ void synthesized(struct Node* nd)
                 // 结构体的域不允许初始化
                 if(kid_0->id_type==FIELD)
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型15: 在定义时对域进行初始化\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型15: 在定义时对域进行初始化\n",kid_1->row);fail=1;
                 }
                 // 判断ASSIGNOP是否合法
                 if(!compare_type(kid_0->VarDec_type,kid_2->type))
                 {
-                    fprintf(stderr, "<语义错误> 第%d行，错误类型5: 赋值号两边的表达式类型不匹配\n",kid_1->row);fail = 1;
+                    fprintf(stderr, "<语义错误> 第%d行，错误类型5: 赋值号两边的表达式类型不匹配\n",kid_1->row);fail=1;
                 }
 
                 
@@ -1407,10 +1411,13 @@ void synthesized(struct Node* nd)
             // VarDec -> ID
             if(kid_num==1)
             {
+                // printf("debug: syn VarDec 断点1\n");
                 struct Node* kid_0 = nd->kids[0];
                 nd->name = (char*) malloc(strlen(kid_0->name)+1);
                 strcpy(nd->name,kid_0->name);
+                // printf("debug: syn VarDec 断点2\n");
                 copy_type(nd->VarDec_type,kid_0->type);
+                // printf("debug: syn VarDec 断点3\n");
 
             }
             // VarDec -> VarDec LB INT RB
@@ -1440,7 +1447,7 @@ void synthesized(struct Node* nd)
             // 已被定义则报错
             if(old_func!=NULL)
             {
-                fprintf(stderr, "<语义错误> 第%d行，错误类型4: 函数出现重复定义\n",nd->row);fail = 1;
+                fprintf(stderr, "<语义错误> 第%d行，错误类型4: 函数出现重复定义\n",nd->row);fail=1;
             }
             // 没被定义则插入
             else
@@ -1565,7 +1572,7 @@ void synthesized(struct Node* nd)
             // if(old_var!=NULL)
             // {
     
-            //     fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)出现重复定义\n",kid_1->row,kid_1->name);fail = 1;
+            //     fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)出现重复定义\n",kid_1->row,kid_1->name);fail=1;
             // }
             // // 该名称已被使用
             // if(old_common!=NULL)
@@ -1573,13 +1580,13 @@ void synthesized(struct Node* nd)
             //     switch (old_common->kind)
             //     {
             //         case STRU:
-            //             fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体名字重复\n",kid_1->row,kid_1->name);fail = 1;
+            //             fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体名字重复\n",kid_1->row,kid_1->name);fail=1;
             //             break;
             //         case FUNC:
-            //             // fprintf(stderr, "<语义错误> 第%d行错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",kid_1->row,kid_1->name);fail = 1;
+            //             // fprintf(stderr, "<语义错误> 第%d行错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",kid_1->row,kid_1->name);fail=1;
             //             break;
             //         case FIELD:
-            //             fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体中的域名字重复\n",kid_1->row,kid_1->name);fail = 1;
+            //             fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体中的域名字重复\n",kid_1->row,kid_1->name);fail=1;
             //             break;
             //         default:
             //             break;
@@ -1621,12 +1628,12 @@ void synthesized(struct Node* nd)
             // ID用于定义
             if(nd->id_usage==DEF)
             {
-                printf("debug: ID定义 入口\n");
+                // printf("debug: ID定义 入口\n");
                 switch(nd->id_type)
                 {
                     // VAR和FIELD可能是数组类型，不能直接在底层插入
                     case VAR:
-                        printf("debug: ID 断点1\n");
+                        // printf("debug: ID 断点1\n");
                         copy_type(nd->type,nd->inh_type);
                         // 查询符号表
                         Var old_var = search_var(nd->name,0);
@@ -1652,13 +1659,13 @@ void synthesized(struct Node* nd)
 
                             insert_var(new_var);
                         }
-                        printf("debug: ID 断点2\n");
+                        // printf("debug: ID 断点2\n");
                         // 变量重复定义
                         if(old_var!=NULL)
                         {
-                            fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)出现重复定义\n",nd->row,nd->name);fail = 1;
+                            fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)出现重复定义\n",nd->row,nd->name);fail=1;
                         }
-                        printf("debug: ID 断点3\n");
+                        // printf("debug: ID 断点3\n");
                         // 该名称已被使用
                         if(old_common!=NULL)
                         {
@@ -1666,13 +1673,13 @@ void synthesized(struct Node* nd)
                             switch (old_common->kind)
                             {
                                 case STRU:
-                                    fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体名字重复\n",nd->row,nd->name);fail = 1;
+                                    fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体名字重复\n",nd->row,nd->name);fail=1;
                                     break;
                                 case FUNC:
-                                    // fprintf(stderr, "<语义错误> 第%d行错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",nd->row,nd->name);fail = 1;
+                                    // fprintf(stderr, "<语义错误> 第%d行错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",nd->row,nd->name);fail=1;
                                     break;
                                 case FIELD:
-                                    fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体中的域名字重复\n",nd->row,nd->name);fail = 1;
+                                    fprintf(stderr, "<语义错误> 第%d行,错误类型3：变量(%s)与前面定义过的结构体中的域名字重复\n",nd->row,nd->name);fail=1;
                                     break;
                                 default:
                                     break;
@@ -1707,7 +1714,7 @@ void synthesized(struct Node* nd)
                         // 该ID已经被变量占用
                         if(old_var!=NULL)
                         {
-                            fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义过的变量的名字重复\n",nd->row,nd->name);fail = 1;
+                            fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义过的变量的名字重复\n",nd->row,nd->name);fail=1;
                         }
                         // 该名称已被使用
                         if(old_common!=NULL)
@@ -1715,13 +1722,13 @@ void synthesized(struct Node* nd)
                             switch (old_common->kind)
                             {
                                 case STRU:
-                                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义的结构体名字重复\n",nd->row,nd->name);fail = 1;
+                                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：域名(%s)与前面定义的结构体名字重复\n",nd->row,nd->name);fail=1;
                                     break;
                                 case FUNC:
-                                    // fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",nd->row,nd->name);fail = 1;
+                                    // fprintf(stderr, "<语义错误> 第%d行，错误类型3：变量(%s)与前面定义/声明过的函数名字重复\n",nd->row,nd->name);
                                     break;
                                 case FIELD:
-                                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：不同结构体中域名(%s)重复\n",nd->row,nd->name);fail = 1;
+                                    fprintf(stderr, "<语义错误> 第%d行，错误类型20：不同结构体中域名(%s)重复\n",nd->row,nd->name);fail=1;
                                     break;
                                 default:
                                     break;
@@ -1730,7 +1737,7 @@ void synthesized(struct Node* nd)
                         // 该结构体中的域名重复
                         if(cache_common!=NULL)
                         {
-                            fprintf(stderr, "<语义错误> 第%d行，错误类型15：结构体中域名(%s)重复定义\n",nd->row,nd->name);fail = 1;
+                            fprintf(stderr, "<语义错误> 第%d行，错误类型15：结构体中域名(%s)重复定义\n",nd->row,nd->name);fail=1;
                         }
                         break;
                     // FUNC和STRU不可以一开始就确定具体结构，所有要留到上一级的综合属性中计算
@@ -1740,7 +1747,7 @@ void synthesized(struct Node* nd)
                         break;
                 
                 }
-                printf("debug: ID定义 出口\n");
+                // printf("debug: ID定义 出口\n");
             }
             // ID用于使用
             else
@@ -1754,7 +1761,7 @@ void synthesized(struct Node* nd)
                         // 该变量未定义
                         if(old_var==NULL)
                         {
-                            fprintf(stderr,"<语义错误> 第%d行，错误类型1：变量(%s)在使用时未经定义\n",nd->row,nd->name);fail = 1;
+                            fprintf(stderr,"<语义错误> 第%d行，错误类型1：变量(%s)在使用时未经定义\n",nd->row,nd->name);fail=1;
                             nd->type->kind = UNKNOWN;
                         }
                         else
@@ -1788,8 +1795,8 @@ void synthesized(struct Node* nd)
 
 void r_s(struct Node* nd)
 {
-    treePrintLevel(nd);
-    printf("    inh\n");
+    // treePrintLevel(nd);
+    // printf("    inh\n");
 
     if(nd->if_empty==1)
     {
@@ -1809,8 +1816,8 @@ void r_s(struct Node* nd)
     // 处理综合属性
     synthesized(nd);
 
-    treePrintLevel(nd);
-    printf("    syn\n");
+    // treePrintLevel(nd);
+    // printf("    syn\n");
 }
 
 void recursive_semantic(struct Node* nd)

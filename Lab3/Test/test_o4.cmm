@@ -53,3 +53,13 @@ int main() {
   write(arrS[0].c + arrS[1].c);
   return 0;
 }
+
+/*
+0
+1
+0
+0
+2
+0
+0
+*/

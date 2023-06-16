@@ -26,7 +26,7 @@ enum Generation_Type
 {
     Common_Generation, StructSpecifier0, Def0, CompSt0, DecList0, DecList1, Dec0, Dec1,
     VarDec0, VarDec1, DefList0, FunDec0, FunDec1, OptTag0, Tag0, Exp0, Exp1, Exp2, Exp3, 
-    ParamDec0, ExtDef0, StmtList0, Stmt0
+    ParamDec0, ExtDef0, StmtList0, Stmt0, ExtDecList0, ExtDecList1
 };
 
 enum ID_Type 
@@ -50,6 +50,7 @@ struct Node
     Type inh_type;// 继承下来的类型
     Type return_type;// 函数的返回值类型
     Type type;// 节点类型,功能多样: 记录变量/式子类型，确定结构体内部类型
+    Type VarDec_type;
     enum {LEFT,RIGHT} l_r;// 左值右值 
     Common struct_specifier;// Common表中的对应的结构体条目
     int if_structspecifier;// 记录一个Specifier是否为StructSpecifier

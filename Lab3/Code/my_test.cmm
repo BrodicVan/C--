@@ -1,0 +1,29 @@
+
+/*
+int main()
+{
+	int a[5],b,c;
+	b = 3+4;
+	c = a[2] + 3;
+	a[2] = a[0];
+	if(a[2]>2)
+	{
+		b = 2;
+	}
+	return 0;
+}
+*/
+
+int fact(int b[10])
+{
+    return 1;
+}
+int main()
+{
+    int result,a[6];
+    a[0] = 3;
+    a[1] = a[0];
+    result = fact(a);
+    write(result);
+    return 0;
+}

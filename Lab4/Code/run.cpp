@@ -1,3 +1,9 @@
+#include <iostream>
+using namespace std;
+
+
+
+
 int func1(int a[2]) {
   int idx = 0;
   int len = 2;
@@ -34,20 +40,11 @@ int main() {
     sum_arr[idx1] = func1(arr[idx1]);
     idx1 = idx1 + 1;
   }
-  write(arr[0][0]);
-  write(arr[0][1]);
-  write(arr[1][0]);
-  write(arr[1][1]);
-  write(sum_arr[0]);
-  write(sum_arr[1]);
+  cout<<arr[0][0]<<endl;
+  cout<<arr[0][1]<<endl;
+  cout<<arr[1][0]<<endl;
+  cout<<arr[1][1]<<endl;
+  cout<<sum_arr[0]<<endl;
+  cout<<sum_arr[1]<<endl;
   return 0;
 }
-
-/*
-0
-1
-1
-0
-1
-1
-*/

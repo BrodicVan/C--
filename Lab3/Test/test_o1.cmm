@@ -19,3 +19,7 @@ int main()
     write(n);
     return 0;
 }
+
+/*
+3
+*/
